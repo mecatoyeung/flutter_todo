@@ -1,17 +1,24 @@
-# todo_flutter
+# Taskwell
 
-A new Flutter project.
+An offline Flutter web to-do list manager. Tasks are stored locally in the
+browser, so each browser keeps its own data.
 
-## Getting Started
+## GitHub Pages deployment
 
-This project is a starting point for a Flutter application.
+The workflow at [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml)
+tests the project, builds the release web app, and deploys it whenever changes
+are pushed to `main`. It also supports manual runs from the **Actions** tab.
 
-A few resources to get you started if this is your first Flutter project:
+### One-time GitHub setup
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. Open the repository **Settings** → **Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Push this workflow to `main`, then wait for **Deploy Flutter web app to
+	GitHub Pages** to succeed.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The app will be published at
+https://mecatoyeung.github.io/flutter_todo/.
+
+The workflow passes the repository name to Flutter as the web base path, so
+assets load correctly on a project Pages URL. If the repository is renamed,
+the workflow automatically uses its new path.
