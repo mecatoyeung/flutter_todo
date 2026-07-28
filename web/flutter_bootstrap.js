@@ -3,9 +3,4 @@
 
 // Flutter's generated service worker is deprecated and unregisters itself.
 // The application service worker is registered by index.html instead.
-_flutter.loader.load({
-	onEntrypointLoaded: async (engineInitializer) => {
-		const appRunner = await engineInitializer.initializeEngine();
-		await appRunner.runApp();
-	},
-});
+_flutter.loader.load();
