@@ -1,9 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'database.dart';
 import 'models.dart';
 
 void main() => runApp(const TodoApp());
+
+enum AppLanguage { traditionalChinese, english }
+
+class AppStrings {
+  const AppStrings(this.language);
+
+  final AppLanguage language;
+
+  bool get isChinese => language == AppLanguage.traditionalChinese;
+  String get appName => 'CY Complete';
+  String get tagline => isChinese ? '清晰思緒，從這裡開始。' : 'A clear mind starts here.';
+  String get yourLists => isChinese ? '我的清單' : 'YOUR LISTS';
+  String get languageLabel => isChinese ? '語言' : 'Language';
+  String get traditionalChinese => '繁體中文';
+  String get english => 'English';
+  String get lightMode => isChinese ? '淺色模式' : 'Light mode';
+  String get darkMode => isChinese ? '深色模式' : 'Dark mode';
+  String get newList => isChinese ? '新增清單' : 'New list';
+  String get switchList => isChinese ? '切換清單' : 'Switch list';
+  String get yourTasks => isChinese ? '你的任務' : 'Your tasks';
+  String taskSummary(int total, int completed) => isChinese
+    ? '$total 項任務 · 已完成 $completed 項'
+    : '$total tasks · $completed completed';
+  String get renameList => isChinese ? '重新命名清單' : 'Rename list';
+  String get deleteList => isChinese ? '刪除清單' : 'Delete list';
+  String get useLightTheme => isChinese ? '使用淺色主題' : 'Use light theme';
+  String get useDarkTheme => isChinese ? '使用深色主題' : 'Use dark theme';
+  String get noListsYet => isChinese ? '尚未建立清單' : 'No lists yet';
+  String get createListMessage => isChinese ? '建立清單以整理你的任務。' : 'Create a list to organize your tasks.';
+  String get createList => isChinese ? '建立清單' : 'Create a list';
+  String get nothingOnYourPlate => isChinese ? '目前沒有任務' : 'Nothing on your plate';
+  String get addTaskMessage => isChinese ? '新增任務以開始使用。' : 'Add a task to get started.';
+  String get createFirstTask => isChinese ? '建立第一項任務' : 'Create first task';
+  String get addTask => isChinese ? '新增任務' : 'Add task';
+  String get deleteTask => isChinese ? '刪除任務' : 'Delete task';
+  String get noDate => isChinese ? '無日期' : 'No date';
+  String get yourListsTitle => isChinese ? '你的清單' : 'Your lists';
+  String get newListTitle => isChinese ? '新增清單' : 'New list';
+  String get renameListTitle => isChinese ? '重新命名清單' : 'Rename list';
+  String get listName => isChinese ? '清單名稱' : 'List name';
+  String get cancel => isChinese ? '取消' : 'Cancel';
+  String get create => isChinese ? '建立' : 'Create';
+  String get save => isChinese ? '儲存' : 'Save';
+  String get addTaskTitle => isChinese ? '新增任務' : 'Add task';
+  String get editTask => isChinese ? '編輯任務' : 'Edit task';
+  String get subject => isChinese ? '主題 *' : 'Subject *';
+  String get description => isChinese ? '說明' : 'Description';
+  String get date => isChinese ? '日期' : 'Date';
+  String get dateAndTime => isChinese ? '日期及時間' : 'Date & time';
+  String get chooseDate => isChinese ? '選擇日期' : 'Choose date';
+  String get deleteTaskTitle => isChinese ? '刪除任務？' : 'Delete task?';
+  String deleteTaskMessage(String subject) => isChinese
+    ? '將會移除「$subject」。'
+    : '“$subject” will be removed.';
+  String get deleteListTitle => isChinese ? '刪除清單？' : 'Delete list?';
+  String deleteListMessage(String name) => isChinese
+    ? '要刪除「$name」及其中所有任務嗎？'
+    : 'Delete “$name” and all its tasks?';
+}
 
 class TodoApp extends StatefulWidget {
   const TodoApp({super.key});
@@ -14,6 +74,7 @@ class TodoApp extends StatefulWidget {
 
 class _TodoAppState extends State<TodoApp> {
   ThemeMode _themeMode = ThemeMode.light;
+  AppLanguage _language = AppLanguage.traditionalChinese;
 
   ThemeData _theme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
@@ -158,8 +219,12 @@ class _TodoAppState extends State<TodoApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CY Complete',
+      title: AppStrings(_language).appName,
       debugShowCheckedModeBanner: false,
+      locale: Locale(_language == AppLanguage.traditionalChinese ? 'zh' : 'en',
+          _language == AppLanguage.traditionalChinese ? 'TW' : null),
+      supportedLocales: const [Locale('zh', 'TW'), Locale('en')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),
       themeMode: _themeMode,
@@ -170,6 +235,8 @@ class _TodoAppState extends State<TodoApp> {
               ? ThemeMode.light
               : ThemeMode.dark,
         ),
+              language: _language,
+              onLanguageChanged: (language) => setState(() => _language = language),
       ),
     );
   }
@@ -281,9 +348,13 @@ class TodoHomePage extends StatefulWidget {
     super.key,
     required this.isDarkMode,
     required this.onToggleTheme,
+    required this.language,
+    required this.onLanguageChanged,
   });
   final bool isDarkMode;
   final VoidCallback onToggleTheme;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
   @override
   State<TodoHomePage> createState() => _TodoHomePageState();
 }
@@ -320,6 +391,8 @@ class _TodoHomePageState extends State<TodoHomePage> {
         controller: current,
         isDarkMode: widget.isDarkMode,
         onToggleTheme: widget.onToggleTheme,
+        language: widget.language,
+        onLanguageChanged: widget.onLanguageChanged,
       ),
     );
   }
@@ -331,10 +404,14 @@ class TodoShell extends StatelessWidget {
     required this.controller,
     required this.isDarkMode,
     required this.onToggleTheme,
+    required this.language,
+    required this.onLanguageChanged,
   });
   final TodoController controller;
   final bool isDarkMode;
   final VoidCallback onToggleTheme;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -350,12 +427,16 @@ class TodoShell extends StatelessWidget {
                     controller: controller,
                     isDarkMode: isDarkMode,
                     onToggleTheme: onToggleTheme,
+                    language: language,
+                    onLanguageChanged: onLanguageChanged,
                   ),
                   Expanded(
                     child: TodoContent(
                       controller: controller,
                       isDarkMode: isDarkMode,
                       onToggleTheme: onToggleTheme,
+                      language: language,
+                      onLanguageChanged: onLanguageChanged,
                     ),
                   ),
                 ],
@@ -366,6 +447,8 @@ class TodoShell extends StatelessWidget {
               showMenu: true,
               isDarkMode: isDarkMode,
               onToggleTheme: onToggleTheme,
+              language: language,
+              onLanguageChanged: onLanguageChanged,
             );
           },
         ),
@@ -380,14 +463,19 @@ class TodoSidebar extends StatelessWidget {
     required this.controller,
     required this.isDarkMode,
     required this.onToggleTheme,
+    required this.language,
+    required this.onLanguageChanged,
   });
   final TodoController controller;
   final bool isDarkMode;
   final VoidCallback onToggleTheme;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final strings = AppStrings(language);
     return Container(
       width: 254,
       padding: const EdgeInsets.fromLTRB(22, 28, 14, 18),
@@ -396,7 +484,7 @@ class TodoSidebar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'CY Complete',
+            strings.appName,
             style: theme.textTheme.labelLarge?.copyWith(
               color: Colors.white,
               letterSpacing: 2,
@@ -405,7 +493,7 @@ class TodoSidebar extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            'A clear mind starts here.',
+            strings.tagline,
             style: TextStyle(
               color: Colors.white.withValues(alpha: .72),
               fontSize: 12,
@@ -413,7 +501,7 @@ class TodoSidebar extends StatelessWidget {
           ),
           const SizedBox(height: 42),
           Text(
-            'YOUR LISTS',
+            strings.yourLists,
             style: TextStyle(
               color: Colors.white.withValues(alpha: .65),
               fontSize: 11,
@@ -447,13 +535,35 @@ class TodoSidebar extends StatelessWidget {
             ),
           ),
           const Divider(color: Colors.white24),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<AppLanguage>(
+              value: language,
+              isExpanded: true,
+              dropdownColor: const Color(0xff171717),
+              iconEnabledColor: Colors.white,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              items: [
+                DropdownMenuItem(
+                  value: AppLanguage.traditionalChinese,
+                  child: Text('${strings.languageLabel}: ${strings.traditionalChinese}'),
+                ),
+                DropdownMenuItem(
+                  value: AppLanguage.english,
+                  child: Text('${strings.languageLabel}: ${strings.english}'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) onLanguageChanged(value);
+              },
+            ),
+          ),
           TextButton.icon(
             onPressed: onToggleTheme,
             icon: Icon(
               isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
               size: 18,
             ),
-            label: Text(isDarkMode ? 'Light mode' : 'Dark mode'),
+            label: Text(isDarkMode ? strings.lightMode : strings.darkMode),
             style: TextButton.styleFrom(
               foregroundColor: Colors.white,
               alignment: Alignment.centerLeft,
@@ -461,9 +571,9 @@ class TodoSidebar extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: () => showListDialog(context, controller),
+            onPressed: () => showListDialog(context, controller, strings: strings),
             icon: const Icon(Icons.add, size: 18),
-            label: const Text('New list'),
+            label: Text(strings.newList),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               side: BorderSide(color: Colors.white.withValues(alpha: .5)),
@@ -485,16 +595,21 @@ class TodoContent extends StatelessWidget {
     required this.controller,
     required this.isDarkMode,
     required this.onToggleTheme,
+    required this.language,
+    required this.onLanguageChanged,
     this.showMenu = false,
   });
   final TodoController controller;
   final bool isDarkMode;
   final VoidCallback onToggleTheme;
+  final AppLanguage language;
+  final ValueChanged<AppLanguage> onLanguageChanged;
   final bool showMenu;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final strings = AppStrings(language);
     final list = controller.selectedList;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -510,8 +625,8 @@ class TodoContent extends StatelessWidget {
             children: [
               if (showMenu) ...[
                 IconButton(
-                  tooltip: 'Switch list',
-                  onPressed: () => showListPicker(context, controller),
+                  tooltip: strings.switchList,
+                  onPressed: () => showListPicker(context, controller, strings),
                   icon: Icon(Icons.list_alt, color: theme.colorScheme.primary),
                 ),
                 const SizedBox(width: 2),
@@ -521,14 +636,17 @@ class TodoContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      list?.name ?? 'Your tasks',
+                      list?.name ?? strings.yourTasks,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${controller.todos.length} tasks · ${controller.completedCount} completed',
+                      strings.taskSummary(
+                        controller.todos.length,
+                        controller.completedCount,
+                      ),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -538,20 +656,37 @@ class TodoContent extends StatelessWidget {
               ),
               if (list != null)
                 IconButton(
-                  tooltip: 'Rename list',
+                    tooltip: strings.renameList,
                   onPressed: () =>
-                      showListDialog(context, controller, existing: list),
+                      showListDialog(context, controller, strings: strings, existing: list),
                   icon: const Icon(Icons.edit_outlined),
                 ),
               if (list != null)
                 IconButton(
-                  tooltip: 'Delete list',
-                  onPressed: () => confirmDeleteList(context, controller),
+                  tooltip: strings.deleteList,
+                  onPressed: () => confirmDeleteList(context, controller, strings),
                   icon: const Icon(Icons.delete_outline),
                 ),
               if (showMenu)
+                PopupMenuButton<AppLanguage>(
+                  tooltip: strings.languageLabel,
+                  initialValue: language,
+                  icon: const Icon(Icons.language_outlined),
+                  onSelected: onLanguageChanged,
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: AppLanguage.traditionalChinese,
+                      child: Text(strings.traditionalChinese),
+                    ),
+                    PopupMenuItem(
+                      value: AppLanguage.english,
+                      child: Text(strings.english),
+                    ),
+                  ],
+                ),
+              if (showMenu)
                 IconButton(
-                  tooltip: isDarkMode ? 'Use light theme' : 'Use dark theme',
+                  tooltip: isDarkMode ? strings.useLightTheme : strings.useDarkTheme,
                   onPressed: onToggleTheme,
                   icon: Icon(
                     isDarkMode
@@ -565,13 +700,17 @@ class TodoContent extends StatelessWidget {
         Expanded(
           child: list == null
               ? EmptyState(
-                  title: 'No lists yet',
-                  message: 'Create a list to organize your tasks.',
-                  actionLabel: 'Create a list',
-                  onAdd: () => showListDialog(context, controller),
+                  strings: strings,
+                  title: strings.noListsYet,
+                  message: strings.createListMessage,
+                  actionLabel: strings.createList,
+                  onAdd: () => showListDialog(context, controller, strings: strings),
                 )
               : controller.todos.isEmpty
-              ? EmptyState(onAdd: () => showTodoDialog(context, controller))
+              ? EmptyState(
+                  strings: strings,
+                  onAdd: () => showTodoDialog(context, controller, strings: strings),
+                )
               : ListView.separated(
                   padding: EdgeInsets.fromLTRB(
                     showMenu ? 20 : 42,
@@ -584,6 +723,7 @@ class TodoContent extends StatelessWidget {
                   itemBuilder: (context, index) => TodoCard(
                     todo: controller.todos[index],
                     controller: controller,
+                    strings: strings,
                   ),
                 ),
         ),
@@ -596,9 +736,9 @@ class TodoContent extends StatelessWidget {
               20,
             ),
             child: FilledButton.icon(
-              onPressed: () => showTodoDialog(context, controller),
+              onPressed: () => showTodoDialog(context, controller, strings: strings),
               icon: const Icon(Icons.add),
-              label: const Text('Add task'),
+              label: Text(strings.addTask),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
                 shape: const RoundedRectangleBorder(
@@ -613,14 +753,18 @@ class TodoContent extends StatelessWidget {
 }
 
 class EmptyState extends StatelessWidget {
-  const EmptyState({
+  EmptyState({
     super.key,
     required this.onAdd,
-    this.title = 'Nothing on your plate',
-    this.message = 'Add a task to get started.',
-    this.actionLabel = 'Create first task',
-  });
+    required this.strings,
+    String? title,
+    String? message,
+    String? actionLabel,
+  }) : title = title ?? strings.nothingOnYourPlate,
+       message = message ?? strings.addTaskMessage,
+      actionLabel = actionLabel ?? strings.createFirstTask;
   final VoidCallback onAdd;
+  final AppStrings strings;
   final String title;
   final String message;
   final String actionLabel;
@@ -654,9 +798,15 @@ class EmptyState extends StatelessWidget {
 }
 
 class TodoCard extends StatelessWidget {
-  const TodoCard({super.key, required this.todo, required this.controller});
+  const TodoCard({
+    super.key,
+    required this.todo,
+    required this.controller,
+    required this.strings,
+  });
   final TodoItem todo;
   final TodoController controller;
+  final AppStrings strings;
 
   @override
   Widget build(BuildContext context) {
@@ -667,7 +817,12 @@ class TodoCard extends StatelessWidget {
         !todo.isDone;
     return Card(
       child: InkWell(
-        onTap: () => showTodoDialog(context, controller, existing: todo),
+        onTap: () => showTodoDialog(
+          context,
+          controller,
+          strings: strings,
+          existing: todo,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -722,7 +877,7 @@ class TodoCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            formatDue(todo),
+                            formatDue(todo, strings),
                             style: TextStyle(
                               fontSize: 12,
                               color: overdue
@@ -738,8 +893,8 @@ class TodoCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Delete task',
-                onPressed: () => confirmDeleteTodo(context, controller, todo),
+                tooltip: strings.deleteTask,
+                onPressed: () => confirmDeleteTodo(context, controller, todo, strings),
                 icon: const Icon(Icons.close, size: 20),
               ),
             ],
@@ -750,9 +905,9 @@ class TodoCard extends StatelessWidget {
   }
 }
 
-String formatDue(TodoItem todo) {
+String formatDue(TodoItem todo, AppStrings strings) {
   final date = todo.dueAt;
-  if (date == null) return 'No date';
+  if (date == null) return strings.noDate;
   final day = '${date.day}'.padLeft(2, '0');
   final month = '${date.month}'.padLeft(2, '0');
   if (todo.dateMode == TodoDateMode.date) return '$day/$month/${date.year}';
@@ -764,6 +919,7 @@ String formatDue(TodoItem todo) {
 Future<void> showListPicker(
   BuildContext context,
   TodoController controller,
+  AppStrings strings,
 ) async {
   await showModalBottomSheet<void>(
     context: context,
@@ -778,16 +934,16 @@ Future<void> showListPicker(
               child: Row(
                 children: [
                   Text(
-                    'Your lists',
+                    strings.yourListsTitle,
                     style: Theme.of(sheetContext).textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const Spacer(),
                   IconButton(
-                    tooltip: 'New list',
+                    tooltip: strings.newList,
                     onPressed: () async {
                       Navigator.pop(sheetContext);
-                      await showListDialog(context, controller);
+                      await showListDialog(context, controller, strings: strings);
                     },
                     icon: const Icon(Icons.add),
                   ),
@@ -824,26 +980,27 @@ Future<void> showListPicker(
 Future<void> showListDialog(
   BuildContext context,
   TodoController controller, {
+  required AppStrings strings,
   TodoListModel? existing,
 }) async {
   final field = TextEditingController(text: existing?.name ?? '');
   final name = await showDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(existing == null ? 'New list' : 'Rename list'),
+      title: Text(existing == null ? strings.newListTitle : strings.renameListTitle),
       content: TextField(
         controller: field,
         autofocus: true,
-        decoration: const InputDecoration(labelText: 'List name'),
+        decoration: InputDecoration(labelText: strings.listName),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(strings.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, field.text),
-          child: Text(existing == null ? 'Create' : 'Save'),
+          child: Text(existing == null ? strings.create : strings.save),
         ),
       ],
     ),
@@ -859,6 +1016,7 @@ Future<void> showListDialog(
 Future<void> showTodoDialog(
   BuildContext context,
   TodoController controller, {
+  required AppStrings strings,
   TodoItem? existing,
 }) async {
   final subject = TextEditingController(text: existing?.subject ?? '');
@@ -897,7 +1055,7 @@ Future<void> showTodoDialog(
         }
 
         return AlertDialog(
-          title: Text(existing == null ? 'Add task' : 'Edit task'),
+          title: Text(existing == null ? strings.addTaskTitle : strings.editTask),
           content: SizedBox(
             width: 450,
             child: SingleChildScrollView(
@@ -907,31 +1065,31 @@ Future<void> showTodoDialog(
                   TextField(
                     controller: subject,
                     autofocus: true,
-                    decoration: const InputDecoration(labelText: 'Subject *'),
+                    decoration: InputDecoration(labelText: strings.subject),
                   ),
                   const SizedBox(height: 14),
                   TextField(
                     controller: description,
                     maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
+                    decoration: InputDecoration(
+                      labelText: strings.description,
                       alignLabelWithHint: true,
                     ),
                   ),
                   const SizedBox(height: 18),
                   SegmentedButton<TodoDateMode>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: TodoDateMode.none,
-                        label: Text('No date'),
+                        label: Text(strings.noDate),
                       ),
                       ButtonSegment(
                         value: TodoDateMode.date,
-                        label: Text('Date'),
+                        label: Text(strings.date),
                       ),
                       ButtonSegment(
                         value: TodoDateMode.dateTime,
-                        label: Text('Date & time'),
+                        label: Text(strings.dateAndTime),
                       ),
                     ],
                     selected: {mode},
@@ -947,7 +1105,7 @@ Future<void> showTodoDialog(
                       icon: const Icon(Icons.calendar_today_outlined),
                       label: Text(
                         dueAt == null
-                            ? 'Choose date'
+                            ? strings.chooseDate
                             : formatDue(
                                 TodoItem(
                                   id: '',
@@ -957,6 +1115,7 @@ Future<void> showTodoDialog(
                                   dateMode: mode,
                                   dueAt: dueAt,
                                 ),
+                                strings,
                               ),
                       ),
                     ),
@@ -968,7 +1127,7 @@ Future<void> showTodoDialog(
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(strings.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -988,7 +1147,7 @@ Future<void> showTodoDialog(
                   ),
                 );
               },
-              child: const Text('Save'),
+              child: Text(strings.save),
             ),
           ],
         );
@@ -1002,20 +1161,21 @@ Future<void> confirmDeleteTodo(
   BuildContext context,
   TodoController controller,
   TodoItem todo,
+  AppStrings strings,
 ) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete task?'),
-      content: Text('“${todo.subject}” will be removed.'),
+      title: Text(strings.deleteTaskTitle),
+      content: Text(strings.deleteTaskMessage(todo.subject)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: Text(strings.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: Text(strings.deleteTask),
         ),
       ],
     ),
@@ -1026,22 +1186,23 @@ Future<void> confirmDeleteTodo(
 Future<void> confirmDeleteList(
   BuildContext context,
   TodoController controller,
+  AppStrings strings,
 ) async {
   final list = controller.selectedList;
   if (list == null) return;
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete list?'),
-      content: Text('Delete “${list.name}” and all its tasks?'),
+      title: Text(strings.deleteListTitle),
+      content: Text(strings.deleteListMessage(list.name)),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: Text(strings.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: Text(strings.deleteList),
         ),
       ],
     ),
