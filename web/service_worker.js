@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cy-complete-v1';
+const CACHE_NAME = 'cy-complete-v2';
 const APP_SHELL = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
