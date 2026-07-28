@@ -31,8 +31,46 @@
 
   <title>CY Complete</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    #pwa-splash {
+      align-items: center;
+      background: #808080;
+      display: flex;
+      inset: 0;
+      justify-content: center;
+      opacity: 1;
+      position: fixed;
+      transition: opacity 200ms ease-out;
+      z-index: 9999;
+    }
+
+    #pwa-splash.pwa-splash--hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #pwa-splash img {
+      height: auto;
+      max-height: 70vh;
+      max-width: 70vw;
+      width: 320px;
+    }
+  </style>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service_worker.js');
+      });
+    }
+  </script>
 </head>
 <body>
+  <div id="pwa-splash" role="status" aria-label="Loading CY Complete">
+    <img src="icons/Icon-512.png" alt="CY Complete">
+  </div>
+
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
