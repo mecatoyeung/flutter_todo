@@ -611,6 +611,81 @@ class TodoContent extends StatelessWidget {
     final theme = Theme.of(context);
     final strings = AppStrings(language);
     final list = controller.selectedList;
+    Widget titleSection() => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          list?.name ?? strings.yourTasks,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          strings.taskSummary(
+            controller.todos.length,
+            controller.completedCount,
+          ),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+
+    Widget actionButtons() => Wrap(
+      spacing: 2,
+      children: [
+        if (list != null)
+          IconButton(
+            tooltip: strings.renameList,
+            onPressed: () => showListDialog(
+              context,
+              controller,
+              strings: strings,
+              existing: list,
+            ),
+            icon: const Icon(Icons.edit_outlined),
+          ),
+        if (list != null)
+          IconButton(
+            tooltip: strings.deleteList,
+            onPressed: () => confirmDeleteList(context, controller, strings),
+            icon: const Icon(Icons.delete_outline),
+          ),
+        if (showMenu)
+          PopupMenuButton<AppLanguage>(
+            tooltip: strings.languageLabel,
+            initialValue: language,
+            icon: const Icon(Icons.language_outlined),
+            onSelected: onLanguageChanged,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: AppLanguage.traditionalChinese,
+                child: Text(strings.traditionalChinese),
+              ),
+              PopupMenuItem(
+                value: AppLanguage.english,
+                child: Text(strings.english),
+              ),
+            ],
+          ),
+        if (showMenu)
+          IconButton(
+            tooltip: isDarkMode ? strings.useLightTheme : strings.useDarkTheme,
+            onPressed: onToggleTheme,
+            icon: Icon(
+              isDarkMode
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+            ),
+          ),
+      ],
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -621,81 +696,38 @@ class TodoContent extends StatelessWidget {
             showMenu ? 20 : 42,
             18,
           ),
-          child: Row(
-            children: [
-              if (showMenu) ...[
-                IconButton(
-                  tooltip: strings.switchList,
-                  onPressed: () => showListPicker(context, controller, strings),
-                  icon: Icon(Icons.list_alt, color: theme.colorScheme.primary),
-                ),
-                const SizedBox(width: 2),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: showMenu
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      list?.name ?? strings.yourTasks,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: strings.switchList,
+                          onPressed: () =>
+                              showListPicker(context, controller, strings),
+                          icon: Icon(
+                            Icons.list_alt,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(child: titleSection()),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      strings.taskSummary(
-                        controller.todos.length,
-                        controller.completedCount,
-                      ),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (list != null)
-                IconButton(
-                    tooltip: strings.renameList,
-                  onPressed: () =>
-                      showListDialog(context, controller, strings: strings, existing: list),
-                  icon: const Icon(Icons.edit_outlined),
-                ),
-              if (list != null)
-                IconButton(
-                  tooltip: strings.deleteList,
-                  onPressed: () => confirmDeleteList(context, controller, strings),
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              if (showMenu)
-                PopupMenuButton<AppLanguage>(
-                  tooltip: strings.languageLabel,
-                  initialValue: language,
-                  icon: const Icon(Icons.language_outlined),
-                  onSelected: onLanguageChanged,
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: AppLanguage.traditionalChinese,
-                      child: Text(strings.traditionalChinese),
-                    ),
-                    PopupMenuItem(
-                      value: AppLanguage.english,
-                      child: Text(strings.english),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: actionButtons(),
                     ),
                   ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: titleSection()),
+                    actionButtons(),
+                  ],
                 ),
-              if (showMenu)
-                IconButton(
-                  tooltip: isDarkMode ? strings.useLightTheme : strings.useDarkTheme,
-                  onPressed: onToggleTheme,
-                  icon: Icon(
-                    isDarkMode
-                        ? Icons.light_mode_outlined
-                        : Icons.dark_mode_outlined,
-                  ),
-                ),
-            ],
-          ),
         ),
         Expanded(
           child: list == null
