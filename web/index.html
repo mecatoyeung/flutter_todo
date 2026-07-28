@@ -59,9 +59,19 @@
   </style>
 
   <script>
+    function hidePwaSplash() {
+      const splash = document.getElementById('pwa-splash');
+      if (!splash || splash.classList.contains('pwa-splash--hidden')) {
+        return;
+      }
+
+      splash.classList.add('pwa-splash--hidden');
+      window.setTimeout(() => splash.remove(), 200);
+    }
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service_worker.js');
+        navigator.serviceWorker.register('/service_worker.js');
       });
     }
   </script>
@@ -80,5 +90,9 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    window.addEventListener('flutter-first-frame', hidePwaSplash, { once: true });
+    window.setTimeout(hidePwaSplash, 15000);
+  </script>
 </body>
 </html>

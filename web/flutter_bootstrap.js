@@ -7,13 +7,5 @@ _flutter.loader.load({
 	onEntrypointLoaded: async (engineInitializer) => {
 		const appRunner = await engineInitializer.initializeEngine();
 		await appRunner.runApp();
-
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				const splash = document.getElementById('pwa-splash');
-				splash?.classList.add('pwa-splash--hidden');
-				window.setTimeout(() => splash?.remove(), 200);
-			});
-		});
 	},
 });
