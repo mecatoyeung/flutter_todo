@@ -16,9 +16,9 @@ are pushed to `main`. It also supports manual runs from the **Actions** tab.
 3. Push this workflow to `main`, then wait for **Deploy Flutter web app to
 	GitHub Pages** to succeed.
 
-The app will be published at
-https://mecatoyeung.github.io/flutter_todo/.
+The app is published at https://todo.catoyeung.com/. The repository URL
+https://mecatoyeung.github.io/flutter_todo/ redirects there.
 
-The workflow passes the repository name to Flutter as the web base path, so
-assets load correctly on a project Pages URL. If the repository is renamed,
-the workflow automatically uses its new path.
+The configured GitHub Pages custom domain serves the app from `/`, so the
+workflow builds Flutter with `/` as its web base path. This ensures all web
+assets load from the custom-domain root.

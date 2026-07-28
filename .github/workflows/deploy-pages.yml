@@ -40,7 +40,9 @@ jobs:
         run: flutter test
 
       - name: Build web app
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        # GitHub Pages redirects this repository to todo.catoyeung.com, where
+        # the app is served at the domain root rather than /flutter_todo/.
+        run: flutter build web --release --base-href "/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
