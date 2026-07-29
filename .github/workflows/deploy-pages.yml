@@ -42,7 +42,10 @@ jobs:
       - name: Build web app
         # GitHub Pages redirects this repository to todo.catoyeung.com, where
         # the app is served at the domain root rather than /flutter_todo/.
-        run: flutter build web --release --base-href "/"
+        run: >
+          flutter build web --release --base-href "/"
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

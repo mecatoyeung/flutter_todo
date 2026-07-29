@@ -8,8 +8,15 @@ class TodoListModel {
 
   Map<String, dynamic> toJson() => {'name': name};
 
+  Map<String, dynamic> toJsonWithId() => {'id': id, ...toJson()};
+
   factory TodoListModel.fromRecord(String id, Map<String, dynamic> data) =>
       TodoListModel(id: id, name: data['name'] as String? ?? 'Untitled list');
+
+  factory TodoListModel.fromJson(Map<String, dynamic> data) => TodoListModel(
+    id: data['id'] as String,
+    name: data['name'] as String? ?? 'Untitled list',
+  );
 }
 
 class TodoItem {
@@ -50,8 +57,25 @@ class TodoItem {
     'isDone': isDone,
   };
 
+  Map<String, dynamic> toJsonWithId() => {'id': id, ...toJson()};
+
   factory TodoItem.fromRecord(String id, Map<String, dynamic> data) => TodoItem(
     id: id,
+    listId: data['listId'] as String,
+    subject: data['subject'] as String? ?? '',
+    description: data['description'] as String? ?? '',
+    dateMode: TodoDateMode.values.firstWhere(
+      (mode) => mode.name == data['dateMode'],
+      orElse: () => TodoDateMode.none,
+    ),
+    dueAt: data['dueAt'] == null
+        ? null
+        : DateTime.tryParse(data['dueAt'] as String),
+    isDone: data['isDone'] as bool? ?? false,
+  );
+
+  factory TodoItem.fromJson(Map<String, dynamic> data) => TodoItem(
+    id: data['id'] as String,
     listId: data['listId'] as String,
     subject: data['subject'] as String? ?? '',
     description: data['description'] as String? ?? '',

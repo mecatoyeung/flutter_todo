@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -262,16 +264,22 @@ class TodoController extends ChangeNotifier {
 
   Future<void> load() async {
     try {
-      lists = await database.getLists();
+      lists = await database.getLists().timeout(
+        const Duration(seconds: 15),
+      );
       if (lists.isEmpty) {
         final list = TodoListModel(id: _id(), name: 'Personal');
         await database.saveList(list);
         lists = [list];
       }
       selectedListId ??= lists.first.id;
-      todos = await database.getTodos(selectedListId!);
+      todos = await database.getTodos(selectedListId!).timeout(
+        const Duration(seconds: 15),
+      );
+    } on TimeoutException {
+      error = 'Loading timed out. Check Supabase connection and try again.';
     } catch (exception) {
-      error = 'Could not open local storage: $exception';
+      error = 'Could not load data from Supabase: $exception';
     } finally {
       isLoading = false;
       notifyListeners();
@@ -361,6 +369,7 @@ class TodoHomePage extends StatefulWidget {
 
 class _TodoHomePageState extends State<TodoHomePage> {
   TodoController? controller;
+  String? startupError;
 
   @override
   void initState() {
@@ -369,16 +378,46 @@ class _TodoHomePageState extends State<TodoHomePage> {
   }
 
   Future<void> _open() async {
-    final database = await TodoDatabase.open();
-    final value = TodoController(database);
-    if (!mounted) return;
-    setState(() => controller = value);
-    await value.load();
+    try {
+      final database = await TodoDatabase.open();
+      final value = TodoController(database);
+      if (!mounted) return;
+      setState(() {
+        controller = value;
+        startupError = null;
+      });
+      await value.load();
+    } catch (exception) {
+      if (!mounted) return;
+      setState(() {
+        startupError = 'App initialization failed: $exception';
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final current = controller;
+    if (startupError != null) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(startupError!, textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: _open,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     if (current == null || current.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
