@@ -269,7 +269,9 @@ class TodoController extends ChangeNotifier {
       );
       if (lists.isEmpty) {
         final list = TodoListModel(id: _id(), name: 'Personal');
-        await database.saveList(list);
+        await database.saveList(list).timeout(
+          const Duration(seconds: 15),
+        );
         lists = [list];
       }
       selectedListId ??= lists.first.id;
@@ -418,21 +420,26 @@ class _TodoHomePageState extends State<TodoHomePage> {
         ),
       );
     }
-    if (current == null || current.isLoading) {
+    if (current == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (current.error != null) {
-      return Scaffold(body: Center(child: Text(current.error!)));
     }
     return AnimatedBuilder(
       animation: current,
-      builder: (context, _) => TodoShell(
-        controller: current,
-        isDarkMode: widget.isDarkMode,
-        onToggleTheme: widget.onToggleTheme,
-        language: widget.language,
-        onLanguageChanged: widget.onLanguageChanged,
-      ),
+      builder: (context, _) {
+        if (current.isLoading) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        if (current.error != null) {
+          return Scaffold(body: Center(child: Text(current.error!)));
+        }
+        return TodoShell(
+          controller: current,
+          isDarkMode: widget.isDarkMode,
+          onToggleTheme: widget.onToggleTheme,
+          language: widget.language,
+          onLanguageChanged: widget.onLanguageChanged,
+        );
+      },
     );
   }
 }

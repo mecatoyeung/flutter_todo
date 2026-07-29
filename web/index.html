@@ -33,9 +33,16 @@
   <link rel="manifest" href="manifest.json">
 
   <script>
+    // Clean up legacy custom SW to avoid stale-cached Flutter bundles.
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service_worker.js');
+      window.addEventListener('load', async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          const scriptUrl = registration.active?.scriptURL ?? registration.installing?.scriptURL ?? '';
+          if (scriptUrl.includes('/service_worker.js')) {
+            await registration.unregister();
+          }
+        }
       });
     }
   </script>
