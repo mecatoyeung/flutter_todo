@@ -8,6 +8,8 @@ import 'models.dart';
 
 void main() => runApp(const TodoApp());
 
+const _sitePassword = String.fromEnvironment('SITE_PASSWORD');
+
 enum AppLanguage { traditionalChinese, english }
 
 class AppStrings {
@@ -230,15 +232,105 @@ class _TodoAppState extends State<TodoApp> {
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),
       themeMode: _themeMode,
-      home: TodoHomePage(
-        isDarkMode: _themeMode == ThemeMode.dark,
-        onToggleTheme: () => setState(
-          () => _themeMode = _themeMode == ThemeMode.dark
-              ? ThemeMode.light
-              : ThemeMode.dark,
+      home: PasswordGate(
+        password: _sitePassword,
+        child: TodoHomePage(
+          isDarkMode: _themeMode == ThemeMode.dark,
+          onToggleTheme: () => setState(
+            () => _themeMode = _themeMode == ThemeMode.dark
+                ? ThemeMode.light
+                : ThemeMode.dark,
+          ),
+          language: _language,
+          onLanguageChanged: (language) =>
+              setState(() => _language = language),
         ),
-              language: _language,
-              onLanguageChanged: (language) => setState(() => _language = language),
+      ),
+    );
+  }
+}
+
+class PasswordGate extends StatefulWidget {
+  const PasswordGate({super.key, required this.password, required this.child});
+
+  final String password;
+  final Widget child;
+
+  @override
+  State<PasswordGate> createState() => _PasswordGateState();
+}
+
+class _PasswordGateState extends State<PasswordGate> {
+  final _passwordController = TextEditingController();
+  bool _isUnlocked = false;
+  bool _showError = false;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final isCorrect =
+        widget.password.isNotEmpty && _passwordController.text == widget.password;
+    setState(() {
+      _isUnlocked = isCorrect;
+      _showError = !isCorrect;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isUnlocked) return widget.child;
+
+    final passwordIsConfigured = widget.password.isNotEmpty;
+    return Scaffold(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'CY Complete',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  passwordIsConfigured
+                      ? 'Enter the password to continue.'
+                      : 'This site is not configured with a password.',
+                  textAlign: TextAlign.center,
+                ),
+                if (passwordIsConfigured) ...[
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _passwordController,
+                    autofocus: true,
+                    obscureText: true,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    onSubmitted: (_) => _submit(),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      errorText: _showError ? 'Incorrect password.' : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _submit,
+                    child: const Text('Continue'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

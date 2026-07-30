@@ -55,10 +55,13 @@ flutter run -d chrome --dart-define-from-file=.env
 	 with check (true);
 	```
 
-4. Run Flutter Web with Supabase values:
+4. Create a `.env` file from `.env.example`, then set `SITE_PASSWORD` to a
+   strong password. This is required to unlock the site.
+
+5. Run Flutter Web with the values in `.env`:
 
 	```bash
-	flutter run -d chrome --dart-define=SUPABASE_URL=https://your-project-ref.supabase.co --dart-define=SUPABASE_ANON_KEY=your-public-anon-key
+	flutter run -d chrome --dart-define-from-file=.env
 	```
 
 ## GitHub Pages deployment
@@ -67,14 +70,20 @@ Set these repository secrets:
 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
+- `SITE_PASSWORD`
 
 The workflow injects them into `flutter build web` with `--dart-define`.
+
+> **Important:** GitHub Pages only hosts static files. The password gate
+> prevents casual access to the app UI, but the password is embedded in the
+> downloaded web bundle and is not a security boundary. Use server-side
+> authentication or an access proxy for sensitive data.
 
 ### One-time GitHub setup
 
 1. Open the repository **Settings** -> **Pages**.
 2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-3. In **Settings** -> **Secrets and variables** -> **Actions**, add `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+3. In **Settings** -> **Secrets and variables** -> **Actions**, add `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SITE_PASSWORD`.
 4. Push to `main` and wait for **Deploy Flutter web app to GitHub Pages**.
 
 The app is published at https://todo.catoyeung.com/. The repository URL
