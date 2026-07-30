@@ -662,10 +662,12 @@ class TodoSidebar extends StatelessWidget {
                       size: 19,
                       color: Colors.white.withValues(alpha: .85),
                     ),
-                    title: Text(
-                      list.name,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    title: SelectionArea(
+                      child: Text(
+                        list.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                      ),
                     ),
                     onTap: () => controller.selectList(list.id),
                   ),
@@ -752,13 +754,15 @@ class TodoContent extends StatelessWidget {
     Widget titleSection() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          list?.name ?? strings.yourTasks,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
+        SelectionArea(
+          child: Text(
+            list?.name ?? strings.yourTasks,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
           ),
         ),
         const SizedBox(height: 4),
@@ -1010,27 +1014,31 @@ class TodoCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      todo.subject,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        decoration: todo.isDone
-                            ? TextDecoration.lineThrough
+                    SelectionArea(
+                      child: Text(
+                        todo.subject,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          decoration: todo.isDone
+                              ? TextDecoration.lineThrough
+                              : null,
+                          color: todo.isDone
+                            ? theme.colorScheme.onSurfaceVariant
                             : null,
-                        color: todo.isDone
-                          ? theme.colorScheme.onSurfaceVariant
-                          : null,
+                        ),
                       ),
                     ),
                     if (todo.description.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Text(
-                        todo.description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          height: 1.35,
+                      SelectionArea(
+                        child: Text(
+                          todo.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            height: 1.35,
+                          ),
                         ),
                       ),
                     ],
@@ -1128,7 +1136,7 @@ Future<void> showListPicker(
                     ListTile(
                       selected: list.id == controller.selectedListId,
                       leading: const Icon(Icons.list_alt),
-                      title: Text(list.name),
+                      title: SelectionArea(child: Text(list.name)),
                       trailing: list.id == controller.selectedListId
                           ? const Icon(Icons.check)
                           : null,
