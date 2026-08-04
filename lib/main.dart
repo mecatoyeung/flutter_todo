@@ -9,6 +9,7 @@ import 'models.dart';
 void main() => runApp(const TodoApp());
 
 const _sitePassword = String.fromEnvironment('SITE_PASSWORD');
+const _containerPadding = 16.0;
 
 enum AppLanguage { traditionalChinese, english }
 
@@ -262,12 +263,22 @@ class PasswordGate extends StatefulWidget {
 
 class _PasswordGateState extends State<PasswordGate> {
   final _passwordController = TextEditingController();
+  final _passwordFocusNode = FocusNode();
   bool _isUnlocked = false;
   bool _showError = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_isUnlocked) _passwordFocusNode.requestFocus();
+    });
+  }
+
+  @override
   void dispose() {
     _passwordController.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -290,7 +301,7 @@ class _PasswordGateState extends State<PasswordGate> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(_containerPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -311,10 +322,12 @@ class _PasswordGateState extends State<PasswordGate> {
                   const SizedBox(height: 24),
                   TextField(
                     controller: _passwordController,
+                    focusNode: _passwordFocusNode,
                     autofocus: true,
                     obscureText: true,
                     enableSuggestions: false,
                     autocorrect: false,
+                    autofillHints: const [AutofillHints.password],
                     onSubmitted: (_) => _submit(),
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -496,7 +509,7 @@ class _TodoHomePageState extends State<TodoHomePage> {
       return Scaffold(
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(_containerPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -616,7 +629,7 @@ class TodoSidebar extends StatelessWidget {
     final strings = AppStrings(language);
     return Container(
       width: 254,
-      padding: const EdgeInsets.fromLTRB(22, 28, 14, 18),
+      padding: const EdgeInsets.all(_containerPadding),
       color: const Color(0xff171717),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -790,13 +803,19 @@ class TodoContent extends StatelessWidget {
               strings: strings,
               existing: list,
             ),
-            icon: const Icon(Icons.edit_outlined),
+            icon: Icon(
+              Icons.edit_outlined,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
         if (list != null)
           IconButton(
             tooltip: strings.deleteList,
             onPressed: () => confirmDeleteList(context, controller, strings),
-            icon: const Icon(Icons.delete_outline),
+            icon: Icon(
+              Icons.delete_outline,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
         if (showMenu)
           PopupMenuButton<AppLanguage>(
@@ -823,6 +842,7 @@ class TodoContent extends StatelessWidget {
               isDarkMode
                   ? Icons.light_mode_outlined
                   : Icons.dark_mode_outlined,
+                  color: theme.colorScheme.onSurface,
             ),
           ),
       ],
@@ -832,30 +852,28 @@ class TodoContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(
-            showMenu ? 20 : 42,
-            28,
-            showMenu ? 20 : 42,
-            18,
-          ),
+          padding: const EdgeInsets.all(_containerPadding),
           child: showMenu
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          tooltip: strings.switchList,
-                          onPressed: () =>
-                              showListPicker(context, controller, strings),
-                          icon: Icon(
-                            Icons.list_alt,
-                            color: theme.colorScheme.primary,
+                    InkWell(
+                      onTap: () => showListPicker(context, controller, strings),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            tooltip: strings.switchList,
+                            onPressed: () =>
+                                showListPicker(context, controller, strings),
+                            icon: Icon(
+                              Icons.list_alt,
+                              color: theme.colorScheme.primary,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(child: titleSection()),
-                      ],
+                          const SizedBox(width: 6),
+                          Expanded(child: titleSection()),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Align(
@@ -886,12 +904,7 @@ class TodoContent extends StatelessWidget {
                   onAdd: () => showTodoDialog(context, controller, strings: strings),
                 )
               : ListView.separated(
-                  padding: EdgeInsets.fromLTRB(
-                    showMenu ? 20 : 42,
-                    8,
-                    showMenu ? 20 : 42,
-                    100,
-                  ),
+                  padding: const EdgeInsets.all(_containerPadding),
                   itemCount: controller.todos.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) => TodoCard(
@@ -903,12 +916,7 @@ class TodoContent extends StatelessWidget {
         ),
         if (list != null)
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              showMenu ? 20 : 42,
-              12,
-              showMenu ? 20 : 42,
-              20,
-            ),
+            padding: const EdgeInsets.all(_containerPadding),
             child: FilledButton.icon(
               onPressed: () => showTodoDialog(context, controller, strings: strings),
               icon: const Icon(Icons.add),
@@ -998,7 +1006,7 @@ class TodoCard extends StatelessWidget {
           existing: todo,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(_containerPadding),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1108,7 +1116,7 @@ Future<void> showListPicker(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 12, 12),
+              padding: const EdgeInsets.all(_containerPadding),
               child: Row(
                 children: [
                   Text(
@@ -1136,7 +1144,7 @@ Future<void> showListPicker(
                     ListTile(
                       selected: list.id == controller.selectedListId,
                       leading: const Icon(Icons.list_alt),
-                      title: SelectionArea(child: Text(list.name)),
+                      title: Text(list.name),
                       trailing: list.id == controller.selectedListId
                           ? const Icon(Icons.check)
                           : null,
